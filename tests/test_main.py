@@ -22,5 +22,7 @@ def test_desc():
     assert "(EA) = Early Access" in tmp and "#Actualités" in tmp
 
 def test_links():
-    tmp = scrap_desc_links(soup)
-    assert tmp[0] == "https://www.youtube.com/watch?v=yxCMsQtVev8&t=0s"
+    assert scrap_desc_links(soup)[0] == "https://www.youtube.com/watch?v=yxCMsQtVev8&t=0s"
+
+def test_comm():
+    assert scrap_comms(soup) == "Je ne trouve pas à quelle jeux correspond l'image du milieu de la miniature. L'illustration est incroyable !"

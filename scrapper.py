@@ -70,4 +70,9 @@ def scrap_desc_links(soup: BeautifulSoup):
         res.append(tmp)
     return res
 
+def scrap_comms(soup: BeautifulSoup):
+    results = soup.find_all("script")
+    pattern = re.compile(r',"teaserContent":{"simpleText":"((?:[^\\"]|\\"|\\)*)"},"trackingParams":')
+    return pattern.search(str(results)).group(1)
+
 scrap_main("yxCMsQtVev8")
