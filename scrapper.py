@@ -19,6 +19,9 @@ def scrap_main(id: str):
     res.append(scrap_title(soup))
     res.append(scrap_nb_like(soup))
     res.append(scrap_desc(soup))
+    res.append(scrap_desc_links(soup))
+    res.append(id)
+    
     return []
 
 def scrap_title(soup: BeautifulSoup):
@@ -43,22 +46,28 @@ def scrap_nb_like(soup: BeautifulSoup):
 def scrap_desc(soup: BeautifulSoup):
     results = soup.find_all("script")
     pattern = re.compile(r'"shortDescription":"(.*)","isCrawlable":')
-    print(pattern.search(str(results)).group(1).replace('\\n', '\n'))
     return pattern.search(str(results)).group(1).replace('\\n', '\n')
 
 def scrap_desc_links(soup: BeautifulSoup):
     results = soup.find_all("script")
     pattern = re.compile(r'"description":{"runs":\[(.*)\]},"subscribeButton":')
     all_desc = ""
+    texts = []
     for result in results:
         match = pattern.search(str(result))
         if match:
             all_desc = match.group(1)
-            pattern2 = re.compile(r'(?:{"text":"((?:[^\\"]|\\"|\\)*)"[^}]*})*')
+            pattern2 = re.compile(r'(?:"url":"((?:[^\\"]|\\"|\\)*)"[^}]*,"webPageType":"((?:[^\\"]|\\"|\\)*)")*')
             texts = pattern2.findall(all_desc)
             if texts:
-                texts = "".join(x for x in texts if x != "")
+                texts = [ (x[0].encode().decode('unicode-escape'), x[1].encode().decode('unicode-escape')) for x in texts if x[0] != '']
                 break
-    return texts
+    res = []
+    for text in texts:
+        tmp = text[0]
+        if text[1]=="WEB_PAGE_TYPE_WATCH":
+            tmp = "https://www.youtube.com" + text[0]
+        res.append(tmp)
+    return res
 
 scrap_main("yxCMsQtVev8")

@@ -20,3 +20,7 @@ def test_nb_like():
 def test_desc():
     tmp = scrap_desc(soup)
     assert "(EA) = Early Access" in tmp and "#Actualités" in tmp
+
+def test_links():
+    tmp = scrap_desc_links(soup)
+    assert tmp[0] == "https://www.youtube.com/watch?v=yxCMsQtVev8&t=0s"
