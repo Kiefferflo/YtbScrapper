@@ -42,6 +42,12 @@ def scrap_nb_like(soup: BeautifulSoup):
 
 def scrap_desc(soup: BeautifulSoup):
     results = soup.find_all("script")
+    pattern = re.compile(r'"shortDescription":"(.*)","isCrawlable":')
+    print(pattern.search(str(results)).group(1).replace('\\n', '\n'))
+    return pattern.search(str(results)).group(1).replace('\\n', '\n')
+
+def scrap_desc_links(soup: BeautifulSoup):
+    results = soup.find_all("script")
     pattern = re.compile(r'"description":{"runs":\[(.*)\]},"subscribeButton":')
     all_desc = ""
     for result in results:
