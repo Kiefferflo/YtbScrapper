@@ -1,5 +1,6 @@
 import requests
 import re
+import json
 from bs4 import BeautifulSoup
 
 URL = "https://www.youtube.com/watch?v="
@@ -16,11 +17,12 @@ def scrap_main(id: str):
     res = []
     page = requests.get(URL + id)
     soup = BeautifulSoup(page.content, "html.parser")
-    res.append(scrap_title(soup))
-    res.append(scrap_nb_like(soup))
-    res.append(scrap_desc(soup))
-    res.append(scrap_desc_links(soup))
-    res.append(id)
+    res["Title"] = scrap_title(soup)
+    res["like"] = scrap_nb_like(soup)
+    res["desc"] = scrap_desc(soup)
+    res["links"] = scrap_desc_links(soup)
+    res["id"] = id
+    res["comm"] = scrap_comm(soup)
     
     return []
 
@@ -70,9 +72,20 @@ def scrap_desc_links(soup: BeautifulSoup):
         res.append(tmp)
     return res
 
-def scrap_comms(soup: BeautifulSoup):
+def scrap_comm(soup: BeautifulSoup):
     results = soup.find_all("script")
     pattern = re.compile(r',"teaserContent":{"simpleText":"((?:[^\\"]|\\"|\\)*)"},"trackingParams":')
     return pattern.search(str(results)).group(1)
 
-scrap_main("yxCMsQtVev8")
+def main():
+    with open('input.json') as mon_fichier:
+        data : dict = json.load(mon_fichier)
+
+    IdVideos : list = data['videos_id']
+    NbrVideos : int = len(IdVideos)
+
+    for i in range (NbrVideos):
+        donnees : dict = scrap_main(i)
+        with open("output.json", "a") as file:
+            json.dump(donnees, file)
+            file.write("\n")

@@ -25,4 +25,4 @@ def test_links():
     assert scrap_desc_links(soup)[0] == "https://www.youtube.com/watch?v=yxCMsQtVev8&t=0s"
 
 def test_comm():
-    assert scrap_comms(soup) == "Je ne trouve pas à quelle jeux correspond l'image du milieu de la miniature. L'illustration est incroyable !"
+    assert scrap_comm(soup) == "Je ne trouve pas à quelle jeux correspond l'image du milieu de la miniature. L'illustration est incroyable !"
