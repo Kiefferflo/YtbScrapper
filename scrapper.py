@@ -6,27 +6,27 @@ from bs4 import BeautifulSoup
 URL = "https://www.youtube.com/watch?v="
 
 def scrap_main(id: str):
-    res = {}
-    page = requests.get(URL + id)
-    soup = BeautifulSoup(page.content, "html.parser")
+    res: dict = {}
+    page: request = requests.get(URL + id)
+    soup: BeautifulSoup = BeautifulSoup(page.content, "html.parser")
     res["title"] = scrap_title(soup)
     res["like"] = scrap_nb_like(soup)
     res["desc"] = scrap_desc(soup)
     res["links"] = scrap_desc_links(soup)
     res["id"] = id
     res["comm"] = scrap_comm(soup)
-    return []
+    return res
 
 def scrap_title(soup: BeautifulSoup):
-    result = soup.find("meta", itemprop="name")
+    result: BeautifulSoup = soup.find("meta", itemprop="name")
     return result['content']
 
 def scrap_name_chnl(soup: BeautifulSoup):
-    result = soup.find("link", itemprop="name")
+    result: BeautifulSoup = soup.find("link", itemprop="name")
     return result['content']
 
 def scrap_nb_like(soup: BeautifulSoup):
-    results = soup.find_all("script")
+    results: BeautifulSoup = soup.find_all("script")
     pattern = re.compile(r'([0-9]*.?[0-9]*[0-9]).?clics')
     nb = "0"
     for result in results:
@@ -37,7 +37,7 @@ def scrap_nb_like(soup: BeautifulSoup):
     return "".join(x for x in nb if x.isdigit())
 
 def scrap_desc(soup: BeautifulSoup):
-    results = soup.find_all("script")
+    results: BeautifulSoup = soup.find_all("script")
     pattern = re.compile(r'"shortDescription":"(.*)","isCrawlable":')
     tmp = pattern.search(str(results))
     res = ""
@@ -46,7 +46,7 @@ def scrap_desc(soup: BeautifulSoup):
     return res
 
 def scrap_desc_links(soup: BeautifulSoup):
-    results = soup.find_all("script")
+    results: BeautifulSoup = soup.find_all("script")
     pattern = re.compile(r'"description":{"runs":\[(.*)\]},"subscribeButton":')
     all_desc = ""
     texts = []
@@ -57,7 +57,7 @@ def scrap_desc_links(soup: BeautifulSoup):
             pattern2 = re.compile(r'(?:"url":"((?:[^\\"]|\\"|\\)*)"[^}]*,"webPageType":"((?:[^\\"]|\\"|\\)*)")*')
             texts = pattern2.findall(all_desc)
             if texts:
-                texts = [ (x[0].encode().decode('unicode-escape'), x[1].encode().decode('unicode-escape')) for x in texts if x[0] != '']
+                texts = [(x[0].encode().decode('unicode-escape'), x[1].encode().decode('unicode-escape')) for x in texts if x[0] != '']
                 break
     res = []
     for text in texts:
@@ -68,7 +68,7 @@ def scrap_desc_links(soup: BeautifulSoup):
     return res
 
 def scrap_comm(soup: BeautifulSoup):
-    results = soup.find_all("script")
+    results: BeautifulSoup = soup.find_all("script")
     pattern = re.compile(r',"teaserContent":{"simpleText":"((?:[^\\"]|\\"|\\)*)"},"trackingParams":')
     tmp = pattern.search(str(results))
     res = ""
@@ -76,14 +76,47 @@ def scrap_comm(soup: BeautifulSoup):
         res = tmp.group(1)
     return res
 
-with open('input.json') as mon_fichier:
-    data : dict = json.load(mon_fichier)
+def vars():
+    args=sys.argv[1:]
+    int_cpt=len(args)
+    if int_cpt == 0:
+        input_file = "input.json"
+        output_file = "output.json"
+    elif int_cpt == 1:
+        input_file = args[0]
+    elif int_cpt == 2 :
+        input_file = args[0]
+        output_file = args[1]
+    elif int_cpt == 4 :
+        if (args[0]!="--input" and args[0]!="--output" and args[2]!="--input" and args[2]!="--output"):
+            raise ArgError("Arguments error flag allowed : --input; --output")
+        if args[0] == "--input":
+            input_file = args[1]
+        else:
+            output_file = args[1]
+        if args[2] == "--input":
+            input_file = args[1]
+        else:
+            output_file = args[1]   
+    else:
+        raise ArgError("Arguments error, please run the command python3 scrapper.py --input input_file.json --output output_file.json")
+    return [input_file,output_file]
 
-IdVideos : list = data['videos_id']
-NbrVideos : int = len(IdVideos)
 
-for i in range(NbrVideos):
-    donnees : dict = scrap_main(IdVideos[i])
-    with open("output.json", "a") as file:
-        json.dump(donnees, file)
-        file.write("\n")
+if __name__ == '__main__':
+    try:
+        input_file,output_file=vars()
+        with open(input_file) as mon_fichier:
+            data: dict = json.load(mon_fichier)
+        IdVideos: list = data['videos_id']
+        NbrVideos: int = len(IdVideos)
+    except Exception as e:
+            print(e)
+    for i in range(NbrVideos):
+        donnees: dict = scrap_main(IdVideos[i])
+        try:
+            with open(output_file, "a") as file:
+                json.dump(donnees, file)
+                file.write("\n")
+        except Exception as e:
+            print(e)
