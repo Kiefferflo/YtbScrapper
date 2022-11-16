@@ -1,4 +1,5 @@
 import requests
+import sys
 import re
 import json
 from bs4 import BeautifulSoup
@@ -10,6 +11,7 @@ def scrap_main(id: str):
     page: request = requests.get(URL + id)
     soup: BeautifulSoup = BeautifulSoup(page.content, "html.parser")
     res["title"] = scrap_title(soup)
+    res["channel"] = scrap_name_chnl(soup)
     res["like"] = scrap_nb_like(soup)
     res["desc"] = scrap_desc(soup)
     res["links"] = scrap_desc_links(soup)
@@ -82,14 +84,9 @@ def vars():
     if int_cpt == 0:
         input_file = "input.json"
         output_file = "output.json"
-    elif int_cpt == 1:
-        input_file = args[0]
-    elif int_cpt == 2 :
-        input_file = args[0]
-        output_file = args[1]
     elif int_cpt == 4 :
         if (args[0]!="--input" and args[0]!="--output" and args[2]!="--input" and args[2]!="--output"):
-            raise ArgError("Arguments error flag allowed : --input; --output")
+            raise Exception("Arguments error flag allowed : --input; --output")
         if args[0] == "--input":
             input_file = args[1]
         else:
@@ -99,7 +96,7 @@ def vars():
         else:
             output_file = args[1]   
     else:
-        raise ArgError("Arguments error, please run the command python3 scrapper.py --input input_file.json --output output_file.json")
+        raise Exception("Arguments error, please run the command python3 scrapper.py --input input_file.json --output output_file.json")
     return [input_file,output_file]
 
 
@@ -111,7 +108,7 @@ if __name__ == '__main__':
         IdVideos: list = data['videos_id']
         NbrVideos: int = len(IdVideos)
     except Exception as e:
-            print(e)
+        print(e)
     for i in range(NbrVideos):
         donnees: dict = scrap_main(IdVideos[i])
         try:

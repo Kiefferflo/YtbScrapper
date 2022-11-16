@@ -1,10 +1,11 @@
 import sys
 sys.path.append("../")
+import pytest
 from scrapper import *
 import requests
 from bs4 import BeautifulSoup
-
-page = requests.get("https://www.youtube.com/watch?v=yxCMsQtVev8")
+id = "yxCMsQtVev8"
+page = requests.get("https://www.youtube.com/watch?v=" + id)
 soup = BeautifulSoup(page.content, "html.parser")
 
 
@@ -26,3 +27,17 @@ def test_links():
 
 def test_comm():
     assert scrap_comm(soup) == "Je ne trouve pas à quelle jeux correspond l'image du milieu de la miniature. L'illustration est incroyable !"
+
+def test_vars():
+    with pytest.raises(Exception) as e:
+        vars()
+
+def test_scrap_main():
+    title = "Soulstone Survivors, Fabular & l'actu | IndieMag l'hebdo #227 - 13/11/2022"
+    chnl = "Seldell"
+    like = 293
+    desc = "(EA) = Early Access"
+    link = "https://www.youtube.com/watch?v=yxCMsQtVev8&t=0s"
+    comm = "Je ne trouve pas à quelle jeux correspond l'image du milieu de la miniature. L'illustration est incroyable !"
+    tmp = scrap_main(id)
+    assert tmp["title"] == title and tmp["channel"] == chnl and int(tmp["like"]) >= like and desc in tmp["desc"] and tmp["links"][0] == link and tmp["id"] == id and tmp["comm"] == comm
