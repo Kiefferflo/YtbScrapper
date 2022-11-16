@@ -5,25 +5,16 @@ from bs4 import BeautifulSoup
 
 URL = "https://www.youtube.com/watch?v="
 
-def scrap_all(id: str):
-    page = requests.get(URL + id)
-    soup = BeautifulSoup(page.content, "html.parser")
-    tests = open("rsc/results", "w")
-    tests.write(soup.prettify())
-    tests.close()
-    return []
-
 def scrap_main(id: str):
-    res = []
+    res = {}
     page = requests.get(URL + id)
     soup = BeautifulSoup(page.content, "html.parser")
-    res["Title"] = scrap_title(soup)
+    res["title"] = scrap_title(soup)
     res["like"] = scrap_nb_like(soup)
     res["desc"] = scrap_desc(soup)
     res["links"] = scrap_desc_links(soup)
     res["id"] = id
     res["comm"] = scrap_comm(soup)
-    
     return []
 
 def scrap_title(soup: BeautifulSoup):
@@ -48,7 +39,11 @@ def scrap_nb_like(soup: BeautifulSoup):
 def scrap_desc(soup: BeautifulSoup):
     results = soup.find_all("script")
     pattern = re.compile(r'"shortDescription":"(.*)","isCrawlable":')
-    return pattern.search(str(results)).group(1).replace('\\n', '\n')
+    tmp = pattern.search(str(results))
+    res = ""
+    if tmp:
+        res = tmp.group(1).replace('\\n', '\n')
+    return res
 
 def scrap_desc_links(soup: BeautifulSoup):
     results = soup.find_all("script")
@@ -75,17 +70,20 @@ def scrap_desc_links(soup: BeautifulSoup):
 def scrap_comm(soup: BeautifulSoup):
     results = soup.find_all("script")
     pattern = re.compile(r',"teaserContent":{"simpleText":"((?:[^\\"]|\\"|\\)*)"},"trackingParams":')
-    return pattern.search(str(results)).group(1)
+    tmp = pattern.search(str(results))
+    res = ""
+    if tmp:
+        res = tmp.group(1)
+    return res
 
-def main():
-    with open('input.json') as mon_fichier:
-        data : dict = json.load(mon_fichier)
+with open('input.json') as mon_fichier:
+    data : dict = json.load(mon_fichier)
 
-    IdVideos : list = data['videos_id']
-    NbrVideos : int = len(IdVideos)
+IdVideos : list = data['videos_id']
+NbrVideos : int = len(IdVideos)
 
-    for i in range (NbrVideos):
-        donnees : dict = scrap_main(i)
-        with open("output.json", "a") as file:
-            json.dump(donnees, file)
-            file.write("\n")
+for i in range(NbrVideos):
+    donnees : dict = scrap_main(IdVideos[i])
+    with open("output.json", "a") as file:
+        json.dump(donnees, file)
+        file.write("\n")
